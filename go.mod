@@ -1,5 +1,6 @@
 module laurakcleve/meal
 
+// +heroku goVersion go1.11
 go 1.18
 
 require (
