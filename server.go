@@ -1,13 +1,18 @@
 package main
 
 import (
+	"laurakcleve/meal/db"
 	"laurakcleve/meal/graph"
 	"laurakcleve/meal/graph/generated"
+
+	"context"
+	"log"
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 const defaultPort = "8080"
@@ -32,7 +37,15 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
+	}	
+	
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found")
 	}
+	
+	db.InitDB()
+	defer db.Conn.Close(context.Background())
 
 	r := gin.Default()
 	r.POST("/query", graphqlHandler())
