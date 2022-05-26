@@ -55,7 +55,7 @@ func main() {
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT")
 	})
 	
-	r.OPTIONS("/", func(c *gin.Context) {
+	r.OPTIONS("/query", func(c *gin.Context) {
 		c.JSON(200, nil)
 	})
 	r.POST("/query", graphqlHandler())
