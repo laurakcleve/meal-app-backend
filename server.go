@@ -51,7 +51,7 @@ func main() {
 
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "origin")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, Content-Type")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT")
 	})
 	
