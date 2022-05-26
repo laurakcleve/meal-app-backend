@@ -48,7 +48,12 @@ func main() {
 	defer db.Conn.Close(context.Background())
 
 	r := gin.Default()
-	r.OPTIONS("/query", graphqlHandler())
+
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	})
+	
+	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 	r.Run(":" + port)
 }
