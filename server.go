@@ -48,7 +48,7 @@ func main() {
 	defer db.Conn.Close(context.Background())
 
 	r := gin.Default()
-	r.POST("/query", graphqlHandler())
+	r.OPTIONS("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 	r.Run(":" + port)
 }
