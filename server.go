@@ -51,8 +51,13 @@ func main() {
 
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "origin")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT")
 	})
 	
+	r.OPTIONS("/", func(c *gin.Context) {
+		c.JSON(200, nil)
+	})
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 	r.Run(":" + port)
