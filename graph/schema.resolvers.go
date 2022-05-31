@@ -611,11 +611,73 @@ func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.
 }
 
 func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.DishTag, error) {
-	panic(fmt.Errorf("Dish Tags not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT dish_tag.id, name
+			FROM dish_tag
+      INNER JOIN item_has_dish_tag ihdt ON ihdt.dish_tag_id = dish_tag.id
+      WHERE ihdt.item_id = $1
+		`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tags := []*model.DishTag{}
+
+	for rows.Next() {
+		var tag model.DishTag
+		var tagID int
+
+		err := rows.Scan(&tagID, tag.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		tag.ID = strconv.Itoa(tagID)
+		tags = append(tags, &tag)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return tags, nil
 }
 
 func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
-	panic(fmt.Errorf("Dish Dates not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT id, date
+			FROM dish_date 
+      WHERE dish_id = $1
+      ORDER BY date DESC
+		`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	dates := []*model.DishDate{}
+
+	for rows.Next() {
+		var date model.DishDate
+		var dateID int
+
+		err := rows.Scan(&dateID, date.Date)
+		if err != nil {
+			return nil, err
+		}
+
+		date.ID = strconv.Itoa(dateID)
+		dates = append(dates, &date)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return dates, nil
 }
 
 func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*model.IngredientSet, error) {
