@@ -86,11 +86,56 @@ func (r *queryResolver) ItemByName(ctx context.Context, name string) (*model.Ite
 }
 
 func (r *queryResolver) Dishes(ctx context.Context) ([]*model.Dish, error) {
-	panic(fmt.Errorf("Dishes not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT id, name, is_active_dish
+			FROM item
+      WHERE item_type = 'dish'
+      ORDER BY name
+		`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	dishes := []*model.Dish{}
+
+	for rows.Next() {
+		var dish model.Dish
+		var dishID int
+
+		err := rows.Scan(&dishID, &dish.Name, &dish.IsActiveDish)
+		if err != nil {
+			return nil, err
+		}
+
+		dish.ID = strconv.Itoa(dishID)
+		dishes = append(dishes, &dish)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return dishes, nil
 }
 
 func (r *queryResolver) Dish(ctx context.Context, id string) (*model.Dish, error) {
-	panic(fmt.Errorf("Dish not implemented"))
+	dish := model.Dish{
+		ID: id,
+	}
+	idNum, _ := strconv.Atoi(id)
+
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT name, is_active_dish
+			FROM item
+      WHERE id = $1
+		`, idNum).Scan(&dish.Name, &dish.IsActiveDish)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &dish, nil
 }
 
 func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryItem, error) {
