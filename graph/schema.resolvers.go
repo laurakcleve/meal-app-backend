@@ -386,7 +386,23 @@ func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*int, err
 }
 
 func (r *mutationResolver) AddPurchase(ctx context.Context, date string, location string) (*model.Purchase, error) {
-	panic(fmt.Errorf("AddPurchase not implemented"))
+	purchase := model.Purchase{}
+	var purchaseID int
+	
+	err := db.Conn.QueryRow(context.Background(), `
+      WITH retrieved_purchase_location_id AS (
+        SELECT purchase_location_id_for_insert($2)
+      )
+      INSERT INTO purchase(date, location_id)
+      SELECT 
+        $1 AS date, 
+        (SELECT * FROM retrieved_purchase_location_id) AS location_id
+      RETURNING id, CAST(date AS TEXT)
+	`, date, location).Scan(&purchaseID, &purchase.Date)
+
+	purchase.ID = strconv.Itoa(purchaseID)
+
+	return &purchase, err
 }
 
 func (r *mutationResolver) DeletePurchase(ctx context.Context, id string) (*int, error) {
