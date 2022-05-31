@@ -1,14 +1,15 @@
 package model
 
 type Item struct {
-	ID     					string 					`json:"id"`
-	Name   					string					`json:"name"`
-	Category  			*ItemCategory  	`json:"category"`
-	Dishes 					[]*Dish 				`json:"dishes"`
-	DefaultLocation *ItemLocation 	`json:"defaultLocation"`
-	ItemType 				string 					`json:"itemType"`
-	Purchases 			[]*PurchaseItem `json:"purchases"`
-	CountsAs 				[]*Item 				`json:"countsAs"`
+	ID     						string 					`json:"id"`
+	Name   						string					`json:"name"`
+	Category  				*ItemCategory  	`json:"category"`
+	Dishes 						[]*Dish 				`json:"dishes"`
+	DefaultLocation 	*ItemLocation 	`json:"defaultLocation"`
+	DefaultShelflife 	int 						`json:"defaultShelflife"`
+	ItemType 					string 					`json:"itemType"`
+	Purchases 				[]*PurchaseItem `json:"purchases"`
+	CountsAs 					[]*Item 				`json:"countsAs"`
 }
 
 type ItemCategory struct {

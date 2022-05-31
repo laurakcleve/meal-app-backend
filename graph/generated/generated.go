@@ -191,9 +191,9 @@ type InventoryItemResolver interface {
 	Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error)
 }
 type ItemResolver interface {
+	Category(ctx context.Context, obj *model.Item) (*model.ItemCategory, error)
 	Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error)
 	DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error)
-	DefaultShelflife(ctx context.Context, obj *model.Item) (*int, error)
 
 	Purchases(ctx context.Context, obj *model.Item) ([]*model.PurchaseItem, error)
 	CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error)
@@ -3036,7 +3036,7 @@ func (ec *executionContext) _Item_category(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Category, nil
+		return ec.resolvers.Item().Category(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3054,8 +3054,8 @@ func (ec *executionContext) fieldContext_Item_category(ctx context.Context, fiel
 	fc = &graphql.FieldContext{
 		Object:     "Item",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3185,7 +3185,7 @@ func (ec *executionContext) _Item_defaultShelflife(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Item().DefaultShelflife(rctx, obj)
+		return obj.DefaultShelflife, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3194,17 +3194,17 @@ func (ec *executionContext) _Item_defaultShelflife(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Item_defaultShelflife(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Item",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -8348,9 +8348,22 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "category":
+			field := field
 
-			out.Values[i] = ec._Item_category(ctx, field, obj)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Item_category(ctx, field, obj)
+				return res
+			}
 
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "dishes":
 			field := field
 
@@ -8386,22 +8399,9 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 
 			})
 		case "defaultShelflife":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Item_defaultShelflife(ctx, field, obj)
-				return res
-			}
+			out.Values[i] = ec._Item_defaultShelflife(ctx, field, obj)
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "itemType":
 
 			out.Values[i] = ec._Item_itemType(ctx, field, obj)
@@ -10608,6 +10608,16 @@ func (ec *executionContext) unmarshalOIngredientSetInput2ᚖlaurakcleveᚋmeal�
 	}
 	res, err := ec.unmarshalInputIngredientSetInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

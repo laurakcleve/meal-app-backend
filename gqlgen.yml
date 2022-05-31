@@ -57,6 +57,8 @@ models:
   Item:
     model: laurakcleve/meal/graph/model.Item
     fields:
+      category:
+        resolver: true
       dishes:
         resolver: true
       defaultLocation:

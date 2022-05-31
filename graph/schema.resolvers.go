@@ -40,15 +40,31 @@ func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.Invento
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.ItemCategory, error) {
+	var category model.ItemCategory
+	var id int
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT item_category.*
+      FROM item_category
+      INNER JOIN item ON item.category_id = item_category.id
+      WHERE item.id = $1
+		`, obj.ID).Scan(&id, &category.Name)
+
+	category.ID = strconv.Itoa(id)
+	
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &category, nil
+}
+
 func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *itemResolver) DefaultShelflife(ctx context.Context, obj *model.Item) (*int, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -137,7 +153,11 @@ func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.Purchase
 }
 
 func (r *queryResolver) Items(ctx context.Context) ([]*model.Item, error) {
-	rows, err := db.Conn.Query(context.Background(), `SELECT id, name FROM item`)
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT id, name, default_shelflife AS "defaultShelflife", item_type AS "itemType"
+      FROM item 
+      ORDER BY name
+		`)
 	if err != nil {
 		return nil, err
 	}
@@ -147,16 +167,14 @@ func (r *queryResolver) Items(ctx context.Context) ([]*model.Item, error) {
 
 	for rows.Next() {
 		var item model.Item
-		var id int
-		var name string
+		var itemID int
 
-		err := rows.Scan(&id, &name)
+		err := rows.Scan(&itemID, &item.Name, &item.DefaultShelflife, &item.ItemType)
 		if err != nil {
 			return nil, err
 		}
 
-		item.ID = strconv.Itoa(id)
-		item.Name = name
+		item.ID = strconv.Itoa(itemID)
 		items = append(items, &item)
 	}
 
