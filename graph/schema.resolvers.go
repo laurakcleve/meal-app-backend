@@ -191,15 +191,102 @@ func (r *queryResolver) InventoryItem(ctx context.Context, id string) (*model.In
 }
 
 func (r *queryResolver) ItemLocations(ctx context.Context) ([]*model.ItemLocation, error) {
-	panic(fmt.Errorf("ItemLocations not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, name
+		FROM inventory_item_location
+		ORDER BY name ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	locations := []*model.ItemLocation{}
+
+	for rows.Next() {
+		var location model.ItemLocation
+		var locationID int
+
+		err := rows.Scan(&locationID, &location.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		location.ID = strconv.Itoa(locationID)
+		locations = append(locations, &location)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return locations, nil
 }
 
 func (r *queryResolver) ItemCategories(ctx context.Context) ([]*model.ItemCategory, error) {
-	panic(fmt.Errorf("ItemCategories not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, name
+		FROM item_category
+		ORDER BY name ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	categories := []*model.ItemCategory{}
+
+	for rows.Next() {
+		var category model.ItemCategory
+		var categoryID int
+
+		err := rows.Scan(&categoryID, &category.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		category.ID = strconv.Itoa(categoryID)
+		categories = append(categories, &category)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return categories, nil
 }
 
 func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) {
-	panic(fmt.Errorf("DishTags not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, name
+		FROM dish_tag
+		ORDER BY name ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tags := []*model.DishTag{}
+
+	for rows.Next() {
+		var tag model.DishTag
+		var tagID int
+
+		err := rows.Scan(&tagID, &tag.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		tag.ID = strconv.Itoa(tagID)
+		tags = append(tags, &tag)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return tags, nil
 }
 
 func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
