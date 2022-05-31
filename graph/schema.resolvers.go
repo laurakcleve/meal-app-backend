@@ -12,67 +12,101 @@ import (
 	"strconv"
 )
 
-func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.DishTag, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Items(ctx context.Context) ([]*model.Item, error) {
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT id, name, default_shelflife AS "defaultShelflife", item_type AS "itemType"
+      FROM item 
+      ORDER BY name
+		`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []*model.Item
+
+	for rows.Next() {
+		var item model.Item
+		var itemID int
+
+		err := rows.Scan(&itemID, &item.Name, &item.DefaultShelflife, &item.ItemType)
+		if err != nil {
+			return nil, err
+		}
+
+		item.ID = strconv.Itoa(itemID)
+		items = append(items, &item)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
-func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+func (r *queryResolver) ItemByID(ctx context.Context, id string) (*model.Item, error) {
+	item := model.Item{
+		ID: id,
+	}
+	idNum, _ := strconv.Atoi(id)
 
-func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*model.IngredientSet, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryItem) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.ItemCategory, error) {
-	var category model.ItemCategory
-	var id int
 	err := db.Conn.QueryRow(context.Background(), `
-      SELECT item_category.*
-      FROM item_category
-      INNER JOIN item ON item.category_id = item_category.id
-      WHERE item.id = $1
-		`, obj.ID).Scan(&id, &category.Name)
-
-	category.ID = strconv.Itoa(id)
-	
+			SELECT name, default_shelflife AS "defaultShelflife", item_type AS "itemType" 
+			FROM item 
+			WHERE id = $1
+		`, idNum).Scan(&item.Name, &item.DefaultShelflife, &item.ItemType)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 
-	return &category, nil
+	fmt.Println("ITEM:\n", item)
+
+	return &item, nil
 }
 
-func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
+func (r *queryResolver) ItemByName(ctx context.Context, name string) (*model.Item, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error) {
+func (r *queryResolver) Dishes(ctx context.Context) ([]*model.Dish, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model.PurchaseItem, error) {
+func (r *queryResolver) Dish(ctx context.Context, id string) (*model.Dish, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
+func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) InventoryItem(ctx context.Context, id string) (*model.InventoryItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) ItemLocations(ctx context.Context) ([]*model.ItemLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) ItemCategories(ctx context.Context) ([]*model.ItemCategory, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchase, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.PurchaseLocation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -136,6 +170,70 @@ func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*stri
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.ItemCategory, error) {
+	var category model.ItemCategory
+	var id int
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT item_category.*
+      FROM item_category
+      INNER JOIN item ON item.category_id = item_category.id
+      WHERE item.id = $1
+		`, obj.ID).Scan(&id, &category.Name)
+
+	category.ID = strconv.Itoa(id)
+	
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &category, nil
+}
+
+func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model.PurchaseItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.DishTag, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*model.IngredientSet, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryItem) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *purchaseResolver) Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -149,94 +247,6 @@ func (r *purchaseItemResolver) Item(ctx context.Context, obj *model.PurchaseItem
 }
 
 func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.PurchaseItem) (*model.Purchase, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Items(ctx context.Context) ([]*model.Item, error) {
-	rows, err := db.Conn.Query(context.Background(), `
-      SELECT id, name, default_shelflife AS "defaultShelflife", item_type AS "itemType"
-      FROM item 
-      ORDER BY name
-		`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var items []*model.Item
-
-	for rows.Next() {
-		var item model.Item
-		var itemID int
-
-		err := rows.Scan(&itemID, &item.Name, &item.DefaultShelflife, &item.ItemType)
-		if err != nil {
-			return nil, err
-		}
-
-		item.ID = strconv.Itoa(itemID)
-		items = append(items, &item)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-
-	return items, nil
-}
-
-func (r *queryResolver) ItemByID(ctx context.Context, id string) (*model.Item, error) {
-	var item model.Item
-	idNum, _ := strconv.Atoi(id)
-	err := db.Conn.QueryRow(context.Background(), `SELECT name FROM item WHERE id = $1`, idNum).Scan(&item.Name)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return &item, nil
-}
-
-func (r *queryResolver) ItemByName(ctx context.Context, name string) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Dishes(ctx context.Context) ([]*model.Dish, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Dish(ctx context.Context, id string) (*model.Dish, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryItem, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) InventoryItem(ctx context.Context, id string) (*model.InventoryItem, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ItemLocations(ctx context.Context) ([]*model.ItemLocation, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ItemCategories(ctx context.Context) ([]*model.ItemCategory, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchase, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.PurchaseLocation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
