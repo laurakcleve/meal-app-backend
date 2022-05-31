@@ -374,7 +374,15 @@ func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.Purchas
 }
 
 func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*int, error) {
-	panic(fmt.Errorf("DeleteItem not implemented"))
+	result, err := db.Conn.Exec(context.Background(), `
+      DELETE FROM item
+      WHERE id = $1
+	`, id)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return rows, err
 }
 
 func (r *mutationResolver) AddPurchase(ctx context.Context, date string, location string) (*model.Purchase, error) {
