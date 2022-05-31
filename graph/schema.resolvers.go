@@ -263,11 +263,11 @@ func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model
       SELECT  
 				id,
 				price,
-        weight_amount AS "weightAmount", 
-        weight_unit AS "weightUnit",
-        quantity_amount AS "quantityAmount",
-        quantity_unit AS "quantityUnit"
-        purchase_id AS "purchaseId"
+        weight_amount, 
+        weight_unit,
+        quantity_amount,
+        quantity_unit,
+        purchase_id
       FROM purchase_item
       WHERE item_id = $1
 		`, obj.ID)
@@ -309,7 +309,7 @@ func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model
 
 func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-      SELECT id, name, default_shelflife, item_type
+      SELECT generic.id, name, default_shelflife, item_type
       FROM item generic
       JOIN item_counts_as ica ON ica.generic_item_id = generic.id
       WHERE ica.specific_item_id = $1
