@@ -291,7 +291,7 @@ func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) 
 
 func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-		SELECT id, date
+		SELECT id, CAST(date AS TEXT)
 		FROM purchase
 		ORDER BY date DESC
 	`)
