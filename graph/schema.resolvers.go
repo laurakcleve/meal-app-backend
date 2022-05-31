@@ -191,8 +191,6 @@ func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.It
 }
 
 func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
-	fmt.Println("Getting dishes")
-	
 	rows, err := db.Conn.Query(context.Background(), `
       WITH generic_items AS (
         SELECT gi.id AS itemID  
@@ -261,9 +259,6 @@ func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*m
 }
 
 func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model.PurchaseItem, error) {
-
-	fmt.Println("Getting purchases")
-	
 	rows, err := db.Conn.Query(context.Background(), `
       SELECT  
 				id,
@@ -313,8 +308,6 @@ func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model
 }
 
 func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
-	fmt.Println("Getting countsAs")
-	
 	rows, err := db.Conn.Query(context.Background(), `
       SELECT id, name, default_shelflife, item_type
       FROM item generic
