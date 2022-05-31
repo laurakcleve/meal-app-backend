@@ -725,7 +725,23 @@ func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.Invento
 }
 
 func (r *purchaseResolver) Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error) {
-	panic(fmt.Errorf("Purchase Location not implemented"))
+	var location model.PurchaseLocation
+	var id int
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT purchase_location.id, name
+      FROM purchase_location
+      INNER JOIN purchase ON purchase.location_id = purchase_location.id
+      WHERE purchase.id = $1
+		`, obj.ID).Scan(&id, &location.Name)
+
+	location.ID = strconv.Itoa(id)
+	
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &location, nil
 }
 
 func (r *purchaseResolver) Items(ctx context.Context, obj *model.Purchase) ([]*model.PurchaseItem, error) {
