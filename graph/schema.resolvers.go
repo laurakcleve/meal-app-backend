@@ -139,11 +139,55 @@ func (r *queryResolver) Dish(ctx context.Context, id string) (*model.Dish, error
 }
 
 func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryItem, error) {
-	panic(fmt.Errorf("InventoryItems not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+    SELECT id, expiration, add_date, amount
+    FROM inventory_item 
+    ORDER BY expiration ASC
+		`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []*model.InventoryItem{}
+
+	for rows.Next() {
+		var item model.InventoryItem
+		var itemID int
+
+		err := rows.Scan(&itemID, &item.Expiration, &item.AddDate, &item.Amount)
+		if err != nil {
+			return nil, err
+		}
+
+		item.ID = strconv.Itoa(itemID)
+		items = append(items, &item)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 func (r *queryResolver) InventoryItem(ctx context.Context, id string) (*model.InventoryItem, error) {
-	panic(fmt.Errorf("InventoryItem not implemented"))
+	item := model.InventoryItem{
+		ID: id,
+	}
+	idNum, _ := strconv.Atoi(id)
+
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT expiration, add_date, amount
+      FROM inventory_item
+      WHERE id = $1
+		`, idNum).Scan(&item.Expiration, &item.AddDate, &item.Amount)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &item, nil
 }
 
 func (r *queryResolver) ItemLocations(ctx context.Context) ([]*model.ItemLocation, error) {
