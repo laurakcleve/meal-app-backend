@@ -12,6 +12,54 @@ import (
 	"strconv"
 )
 
+func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.DishTag, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*model.IngredientSet, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryItem) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) DefaultShelflife(ctx context.Context, obj *model.Item) (*int, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model.PurchaseItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*int, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -69,6 +117,22 @@ func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date 
 }
 
 func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *purchaseResolver) Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *purchaseResolver) Items(ctx context.Context, obj *model.Purchase) ([]*model.PurchaseItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *purchaseItemResolver) Item(ctx context.Context, obj *model.PurchaseItem) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.PurchaseItem) (*model.Purchase, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -158,11 +222,59 @@ func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.Purchas
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *ingredientInputResolver) Item(ctx context.Context, obj *model.IngredientInput, data *model.IngredientItemInput) error {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *ingredientSetInputResolver) Ingredients(ctx context.Context, obj *model.IngredientSetInput, data []*model.IngredientInput) error {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// Dish returns generated.DishResolver implementation.
+func (r *Resolver) Dish() generated.DishResolver { return &dishResolver{r} }
+
+// Ingredient returns generated.IngredientResolver implementation.
+func (r *Resolver) Ingredient() generated.IngredientResolver { return &ingredientResolver{r} }
+
+// IngredientSet returns generated.IngredientSetResolver implementation.
+func (r *Resolver) IngredientSet() generated.IngredientSetResolver { return &ingredientSetResolver{r} }
+
+// InventoryItem returns generated.InventoryItemResolver implementation.
+func (r *Resolver) InventoryItem() generated.InventoryItemResolver { return &inventoryItemResolver{r} }
+
+// Item returns generated.ItemResolver implementation.
+func (r *Resolver) Item() generated.ItemResolver { return &itemResolver{r} }
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+// Purchase returns generated.PurchaseResolver implementation.
+func (r *Resolver) Purchase() generated.PurchaseResolver { return &purchaseResolver{r} }
+
+// PurchaseItem returns generated.PurchaseItemResolver implementation.
+func (r *Resolver) PurchaseItem() generated.PurchaseItemResolver { return &purchaseItemResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// IngredientInput returns generated.IngredientInputResolver implementation.
+func (r *Resolver) IngredientInput() generated.IngredientInputResolver {
+	return &ingredientInputResolver{r}
+}
+
+// IngredientSetInput returns generated.IngredientSetInputResolver implementation.
+func (r *Resolver) IngredientSetInput() generated.IngredientSetInputResolver {
+	return &ingredientSetInputResolver{r}
+}
+
+type dishResolver struct{ *Resolver }
+type ingredientResolver struct{ *Resolver }
+type ingredientSetResolver struct{ *Resolver }
+type inventoryItemResolver struct{ *Resolver }
+type itemResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
+type purchaseResolver struct{ *Resolver }
+type purchaseItemResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type ingredientInputResolver struct{ *Resolver }
+type ingredientSetInputResolver struct{ *Resolver }

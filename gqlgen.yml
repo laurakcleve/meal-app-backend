@@ -35,7 +35,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-#  - "laurakcleve/meal/graph/model"
+ - "laurakcleve/meal/graph/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -54,3 +54,64 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Item:
+    model: laurakcleve/meal/graph/model.Item
+    fields:
+      dishes:
+        resolver: true
+      defaultLocation:
+        resolver: true
+      purchases:
+        resolver: true
+      countsAs:
+        resolver: true
+  Dish:
+    model: laurakcleve/meal/graph/model.Dish
+    fields:
+      tags:
+        resolver: true
+      dates:
+        resolver: true
+      ingredientSets:
+        resolver: true
+  Ingredient:
+    model: laurakcleve/meal/graph/model.Ingredient
+    fields:
+      item:
+        resolver: true
+  IngredientInput:
+    model: laurakcleve/meal/graph/model.IngredientInput
+    fields:
+      item:
+        resolver: true
+  IngredientSet:
+    model: laurakcleve/meal/graph/model.IngredientSet
+    fields:
+      ingredients:
+        resolver: true
+  IngredientSetInput:
+    model: laurakcleve/meal/graph/model.IngredientSetInput
+    fields:
+      ingredients:
+        resolver: true
+  InventoryItem:
+    model: laurakcleve/meal/graph/model.InventoryItem
+    fields:
+      item:
+        resolver: true
+      location:
+        resolver: true
+  Purchase:
+    model: laurakcleve/meal/graph/model.Purchase
+    fields:
+      location:
+        resolver: true
+      items:
+        resolver: true
+  PurchaseItem:
+    model: laurakcleve/meal/graph/model.PurchaseItem
+    fields:
+      item:
+        resolver: true
+      purchase:
+        resolver: true
