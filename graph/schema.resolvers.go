@@ -191,7 +191,53 @@ func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.It
 }
 
 func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Dish, error) {
-	panic(fmt.Errorf("Item Dishes not implemented"))
+	fmt.Println("Getting dishes")
+	
+	rows, err := db.Conn.Query(context.Background(), `
+      WITH generic_items AS (
+        SELECT gi.id AS itemID  
+        FROM item gi
+        INNER JOIN item_counts_as ica on ica.generic_item_id = gi.id
+        WHERE ica.specific_item_id = $1
+      )
+      SELECT DISTINCT dish.id, dish.name, dish.is_active_dish 
+      FROM item dish
+      INNER JOIN ingredient_set ings ON ings.parent_item_id = dish.id
+      INNER JOIN ingredient ing ON ing.ingredient_set_id = ings.id
+      INNER JOIN item i ON i.id = ing.item_id
+      WHERE i.id IN ((SELECT UNNEST(ARRAY_APPEND(ARRAY_AGG(itemID), $1)) 
+                      FROM generic_items))
+		`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dishes []*model.Dish
+
+	for rows.Next() {
+		var dish model.Dish
+		var dishID int
+
+		err := rows.Scan(
+			&dishID, 
+			dish.Name, 
+			dish.IsActiveDish, 
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		dish.ID = strconv.Itoa(dishID)
+		dishes = append(dishes, &dish)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return dishes, nil
 }
 
 func (r *itemResolver) DefaultLocation(ctx context.Context, obj *model.Item) (*model.ItemLocation, error) {
@@ -267,7 +313,45 @@ func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model
 }
 
 func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error) {
-	panic(fmt.Errorf("Item CountsAs not implemented"))
+	fmt.Println("Getting countsAs")
+	
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT id, name, default_shelflife, item_type
+      FROM item generic
+      JOIN item_counts_as ica ON ica.generic_item_id = generic.id
+      WHERE ica.specific_item_id = $1
+		`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var countsAsItems []*model.Item
+
+	for rows.Next() {
+		var item model.Item
+		var itemID int
+
+		err := rows.Scan(
+			&itemID, 
+			item.Name, 
+			item.DefaultShelflife, 
+			item.ItemType,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		item.ID = strconv.Itoa(itemID)
+		countsAsItems = append(countsAsItems, &item)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return countsAsItems, nil
 }
 
 func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.DishTag, error) {
