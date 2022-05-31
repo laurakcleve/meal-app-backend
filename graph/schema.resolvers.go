@@ -409,8 +409,65 @@ func (r *mutationResolver) DeletePurchase(ctx context.Context, id string) (*int,
 	panic(fmt.Errorf("DeletePurchase not implemented"))
 }
 
-func (r *mutationResolver) AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error) {
-	panic(fmt.Errorf("AddPurchaseItem not implemented"))
+func (r *mutationResolver) AddPurchaseItem(
+		ctx context.Context, 
+		purchaseID string, 
+		name string, 
+		price *float64, 
+		weightAmount *float64, 
+		weightUnit *string, 
+		quantityAmount *float64, 
+		quantityUnit *string,
+		number int,
+		itemType string,
+	) (*model.PurchaseItem, error) {
+
+	purchaseItem := model.PurchaseItem{}
+	var tempID int
+	
+	err := db.Conn.QueryRow(context.Background(), `
+      WITH retrieved_item_id AS (
+        SELECT item_id_for_insert($2, CAST($9 AS itemtype)) 
+      )
+      INSERT INTO purchase_item(
+        purchase_id,
+        item_id, 
+        price, 
+        weight_amount, 
+        weight_unit, 
+        quantity_amount, 
+        quantity_unit)
+      SELECT
+        $1 AS purchase_id,
+        (SELECT * FROM retrieved_item_id),
+        $3 AS price,
+        $4 AS weight_amount,
+        $5 AS weight_unit,
+        $6 AS quantity_amount,
+        $7 AS quantity_unit
+      FROM GENERATE_SERIES(1, $8)
+      RETURNING id, price, weight_amount, weight_unit, quantity_amount, quantity_unit
+	`, purchaseID, 
+		 name, 
+		 price,
+		 weightAmount,
+		 weightUnit,
+		 quantityAmount,
+		 quantityUnit,
+		 number,
+		 itemType,
+		 ).Scan(
+			 &tempID, 
+			 &purchaseItem.Price,
+			 &purchaseItem.WeightAmount,
+			 &purchaseItem.WeightUnit,
+			 &purchaseItem.QuantityAmount,
+			 &purchaseItem.QuantityUnit,
+			)
+
+	purchaseItem.ID = strconv.Itoa(tempID)
+
+	return &purchaseItem, err
 }
 
 func (r *mutationResolver) UpdatePurchaseItem(ctx context.Context, id string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string) (*model.PurchaseItem, error) {
@@ -745,11 +802,65 @@ func (r *purchaseResolver) Location(ctx context.Context, obj *model.Purchase) (*
 }
 
 func (r *purchaseResolver) Items(ctx context.Context, obj *model.Purchase) ([]*model.PurchaseItem, error) {
-	panic(fmt.Errorf("Purchase Items not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+      SELECT 
+        id, 
+        price, 
+        weight_amount,
+        weight_unit,
+        quantity_amount,
+        quantity_unit
+      FROM purchase_item
+      WHERE purchase_id = $1
+      ORDER BY id DESC
+		`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []*model.PurchaseItem{}
+
+	for rows.Next() {
+		var item model.PurchaseItem
+		var tempID int
+
+		err := rows.Scan(&tempID, &item.Price, &item.WeightAmount, &item.WeightUnit, &item.QuantityAmount, &item.QuantityUnit)
+		if err != nil {
+			return nil, err
+		}
+
+		item.ID = strconv.Itoa(tempID)
+		items = append(items, &item)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 func (r *purchaseItemResolver) Item(ctx context.Context, obj *model.PurchaseItem) (*model.Item, error) {
-	panic(fmt.Errorf("PurchaseItem Item not implemented"))
+	item := model.Item{}
+	var tempID int
+
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT item.id, name, COALESCE(default_shelflife, 0) AS default_shelflife, item_type
+      FROM item
+			INNER JOIN purchase_item ON purchase_item.item_id = item.id
+      WHERE purchase_item.id = $1 
+		`, obj.ID).Scan(&tempID, &item.Name, &item.DefaultShelflife, &item.ItemType)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	item.ID = strconv.Itoa(tempID)
+
+	return &item, nil
 }
 
 func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.PurchaseItem) (*model.Purchase, error) {
