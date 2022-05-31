@@ -5,7 +5,6 @@ import (
 	"laurakcleve/meal/graph"
 	"laurakcleve/meal/graph/generated"
 
-	"context"
 	"log"
 	"os"
 
@@ -45,7 +44,7 @@ func main() {
 	}
 	
 	db.InitDB()
-	defer db.Conn.Close(context.Background())
+	defer db.Conn.Close()
 
 	r := gin.Default()
 
