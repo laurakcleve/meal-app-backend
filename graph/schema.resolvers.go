@@ -23,7 +23,7 @@ func (r *queryResolver) Items(ctx context.Context) ([]*model.Item, error) {
 	}
 	defer rows.Close()
 
-	var items []*model.Item
+	items := []*model.Item{}
 
 	for rows.Next() {
 		var item model.Item
@@ -212,7 +212,7 @@ func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Di
 	}
 	defer rows.Close()
 
-	var dishes []*model.Dish
+	dishes := []*model.Dish{}
 
 	for rows.Next() {
 		var dish model.Dish
@@ -277,7 +277,7 @@ func (r *itemResolver) Purchases(ctx context.Context, obj *model.Item) ([]*model
 	}
 	defer rows.Close()
 
-	var purchases []*model.PurchaseItem
+	purchases := []*model.PurchaseItem{}
 
 	for rows.Next() {
 		var purchase model.PurchaseItem
@@ -320,7 +320,7 @@ func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.
 	}
 	defer rows.Close()
 
-	var countsAsItems []*model.Item
+	countsAsItems := []*model.Item{}
 
 	for rows.Next() {
 		var item model.Item
