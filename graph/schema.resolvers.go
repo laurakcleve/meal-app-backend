@@ -61,13 +61,28 @@ func (r *queryResolver) ItemByID(ctx context.Context, id string) (*model.Item, e
 		return nil, err
 	}
 
-	fmt.Println("ITEM:\n", item)
-
 	return &item, nil
 }
 
 func (r *queryResolver) ItemByName(ctx context.Context, name string) (*model.Item, error) {
-	panic(fmt.Errorf("ItemByName not implemented"))
+	item := model.Item{
+		Name: name,
+	}
+	var itemID int
+
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT id, default_shelflife, item_type
+      FROM item
+      WHERE name = $1
+		`, name).Scan(&itemID, &item.DefaultShelflife, &item.ItemType)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	item.ID = strconv.Itoa(itemID)
+
+	return &item, nil
 }
 
 func (r *queryResolver) Dishes(ctx context.Context) ([]*model.Dish, error) {
