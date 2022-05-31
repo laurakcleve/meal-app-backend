@@ -864,7 +864,24 @@ func (r *purchaseItemResolver) Item(ctx context.Context, obj *model.PurchaseItem
 }
 
 func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.PurchaseItem) (*model.Purchase, error) {
-	panic(fmt.Errorf("PurchaseItem Purchase not implemented"))
+	purchase := model.Purchase{}
+	var tempID int
+
+	err := db.Conn.QueryRow(context.Background(), `
+			SELECT purchase.id, CAST(date AS TEXT)
+			FROM purchase
+			INNER JOIN purchase_item on purchase_item.purchase_id = purchase.id
+			WHERE purchase_item.id = $1
+		`, obj.ID).Scan(&tempID, &purchase.Date)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	purchase.ID = strconv.Itoa(tempID)
+
+	return &purchase, nil
 }
 
 func (r *ingredientInputResolver) Item(ctx context.Context, obj *model.IngredientInput, data *model.IngredientItemInput) error {
