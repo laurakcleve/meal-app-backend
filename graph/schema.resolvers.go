@@ -290,15 +290,87 @@ func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) 
 }
 
 func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
-	panic(fmt.Errorf("Purchases not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, date
+		FROM purchase
+		ORDER BY date DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	purchases := []*model.Purchase{}
+
+	for rows.Next() {
+		var purchase model.Purchase
+		var purchaseID int
+
+		err := rows.Scan(&purchaseID, &purchase.Date)
+		if err != nil {
+			return nil, err
+		}
+
+		purchase.ID = strconv.Itoa(purchaseID)
+		purchases = append(purchases, &purchase)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return purchases, nil
 }
 
 func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchase, error) {
-	panic(fmt.Errorf("Purchase not implemented"))
+	purchase := model.Purchase{
+		ID: id,
+	}
+	idNum, _ := strconv.Atoi(id)
+
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT date 
+			FROM purchase
+      WHERE id = $1
+		`, idNum).Scan(&purchase.Date)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &purchase, nil
 }
 
 func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.PurchaseLocation, error) {
-	panic(fmt.Errorf("PurchaseLocations not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, name
+		FROM purchase_location
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	locations := []*model.PurchaseLocation{}
+
+	for rows.Next() {
+		var location model.PurchaseLocation
+		var locationID int
+
+		err := rows.Scan(&locationID, &location.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		location.ID = strconv.Itoa(locationID)
+		locations = append(locations, &location)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return locations, nil
 }
 
 func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*int, error) {
