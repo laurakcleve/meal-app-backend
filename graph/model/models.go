@@ -6,7 +6,7 @@ type Item struct {
 	Category  				*ItemCategory  	`json:"category"`
 	Dishes 						[]*Dish 				`json:"dishes"`
 	DefaultLocation 	*ItemLocation 	`json:"defaultLocation"`
-	DefaultShelflife 	int 						`json:"defaultShelflife"`
+	DefaultShelflife 	*int 				 		`json:"defaultShelflife"`
 	ItemType 					string 					`json:"itemType"`
 	Purchases 				[]*PurchaseItem `json:"purchases"`
 	CountsAs 					[]*Item 				`json:"countsAs"`

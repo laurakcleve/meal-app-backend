@@ -3194,9 +3194,9 @@ func (ec *executionContext) _Item_defaultShelflife(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Item_defaultShelflife(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10608,16 +10608,6 @@ func (ec *executionContext) unmarshalOIngredientSetInput2ᚖlaurakcleveᚋmeal�
 	}
 	res, err := ec.unmarshalInputIngredientSetInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
