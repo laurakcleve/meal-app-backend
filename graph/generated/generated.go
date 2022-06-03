@@ -211,7 +211,7 @@ type MutationResolver interface {
 	UpdateDish(ctx context.Context, id string, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error)
 	DeleteDish(ctx context.Context, id string) (*int, error)
 	AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error)
-	DeleteDishDate(ctx context.Context, id string) (*int, error)
+	DeleteDishDate(ctx context.Context, id string) (*string, error)
 }
 type PurchaseResolver interface {
 	Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error)
@@ -1060,7 +1060,7 @@ var sources = []*ast.Source{
     ): Dish!
     deleteDish(id: ID!): Int
     addDishDate(dishId: ID!, date: String!): DishDate!
-    deleteDishDate(id: ID!): Int
+    deleteDishDate(id: ID!): ID
   }
 
   type Item {
@@ -4455,9 +4455,9 @@ func (ec *executionContext) _Mutation_deleteDishDate(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteDishDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4467,7 +4467,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteDishDate(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {

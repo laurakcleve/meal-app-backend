@@ -974,8 +974,17 @@ func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date 
 	return &dishDate, err
 }
 
-func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*int, error) {
-	panic(fmt.Errorf("DeleteDishDate not implemented"))
+func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*string, error) {
+	// Must return the string id of the date deleted, front end needs it to update the list
+	result, err := db.Conn.Exec(context.Background(), `
+		DELETE FROM dish_date
+		WHERE id = $1
+	`, id)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return &id, err
 }
 
 func (r *purchaseResolver) Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error) {

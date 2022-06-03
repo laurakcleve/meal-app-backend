@@ -88,7 +88,7 @@
     ): Dish!
     deleteDish(id: ID!): Int
     addDishDate(dishId: ID!, date: String!): DishDate!
-    deleteDishDate(id: ID!): Int
+    deleteDishDate(id: ID!): ID
   }
 
   type Item {
