@@ -206,9 +206,9 @@ func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.Invento
 	var location model.ItemLocation
 	var id int
 	err := db.Conn.QueryRow(context.Background(), `
-      SELECT inventory_item_location.id, name
-      FROM inventory_item_location
-      INNER JOIN item on item.default_location_id = inventory_item_location.id
+      SELECT loc.id, loc.name
+      FROM inventory_item_location loc
+      INNER JOIN inventory_item on inventory_item.location_id = loc.id
       WHERE inventory_item.id = $1
 		`, obj.ID).Scan(&id, &location.Name)
 
