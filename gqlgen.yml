@@ -83,9 +83,6 @@ models:
         resolver: true
   IngredientInput:
     model: laurakcleve/meal/graph/model.IngredientInput
-    fields:
-      item:
-        resolver: true
   IngredientSet:
     model: laurakcleve/meal/graph/model.IngredientSet
     fields:
@@ -93,9 +90,6 @@ models:
         resolver: true
   IngredientSetInput:
     model: laurakcleve/meal/graph/model.IngredientSetInput
-    fields:
-      ingredients:
-        resolver: true
   InventoryItem:
     model: laurakcleve/meal/graph/model.InventoryItem
     fields:

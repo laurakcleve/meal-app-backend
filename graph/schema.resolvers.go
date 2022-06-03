@@ -1446,14 +1446,6 @@ func (r *queryResolver) PurchaseLocations(ctx context.Context) ([]*model.Purchas
 	return locations, nil
 }
 
-func (r *ingredientInputResolver) Item(ctx context.Context, obj *model.IngredientInput, data *model.IngredientItemInput) error {
-	panic(fmt.Errorf("IngredientInput Item not implemented"))
-}
-
-func (r *ingredientSetInputResolver) Ingredients(ctx context.Context, obj *model.IngredientSetInput, data []*model.IngredientInput) error {
-	panic(fmt.Errorf("IngredientSetInput Ingredients not implemented"))
-}
-
 // Dish returns generated.DishResolver implementation.
 func (r *Resolver) Dish() generated.DishResolver { return &dishResolver{r} }
 
@@ -1481,16 +1473,6 @@ func (r *Resolver) PurchaseItem() generated.PurchaseItemResolver { return &purch
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// IngredientInput returns generated.IngredientInputResolver implementation.
-func (r *Resolver) IngredientInput() generated.IngredientInputResolver {
-	return &ingredientInputResolver{r}
-}
-
-// IngredientSetInput returns generated.IngredientSetInputResolver implementation.
-func (r *Resolver) IngredientSetInput() generated.IngredientSetInputResolver {
-	return &ingredientSetInputResolver{r}
-}
-
 type dishResolver struct{ *Resolver }
 type ingredientResolver struct{ *Resolver }
 type ingredientSetResolver struct{ *Resolver }
@@ -1500,5 +1482,3 @@ type mutationResolver struct{ *Resolver }
 type purchaseResolver struct{ *Resolver }
 type purchaseItemResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type ingredientInputResolver struct{ *Resolver }
-type ingredientSetInputResolver struct{ *Resolver }

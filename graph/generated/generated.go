@@ -45,8 +45,6 @@ type ResolverRoot interface {
 	Purchase() PurchaseResolver
 	PurchaseItem() PurchaseItemResolver
 	Query() QueryResolver
-	IngredientInput() IngredientInputResolver
-	IngredientSetInput() IngredientSetInputResolver
 }
 
 type DirectiveRoot struct {
@@ -238,13 +236,6 @@ type QueryResolver interface {
 	Purchases(ctx context.Context) ([]*model.Purchase, error)
 	Purchase(ctx context.Context, id string) (*model.Purchase, error)
 	PurchaseLocations(ctx context.Context) ([]*model.PurchaseLocation, error)
-}
-
-type IngredientInputResolver interface {
-	Item(ctx context.Context, obj *model.IngredientInput, data *model.IngredientItemInput) error
-}
-type IngredientSetInputResolver interface {
-	Ingredients(ctx context.Context, obj *model.IngredientSetInput, data []*model.IngredientInput) error
 }
 
 type executableSchema struct {
@@ -7877,11 +7868,8 @@ func (ec *executionContext) unmarshalInputIngredientInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("item"))
-			data, err := ec.unmarshalNIngredientItemInput2ᚖlaurakcleveᚋmealᚋgraphᚋmodelᚐIngredientItemInput(ctx, v)
+			it.Item, err = ec.unmarshalNIngredientItemInput2ᚖlaurakcleveᚋmealᚋgraphᚋmodelᚐIngredientItemInput(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.IngredientInput().Item(ctx, &it, data); err != nil {
 				return it, err
 			}
 		case "isInInventory":
@@ -7958,11 +7946,8 @@ func (ec *executionContext) unmarshalInputIngredientSetInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ingredients"))
-			data, err := ec.unmarshalNIngredientInput2ᚕᚖlaurakcleveᚋmealᚋgraphᚋmodelᚐIngredientInput(ctx, v)
+			it.Ingredients, err = ec.unmarshalNIngredientInput2ᚕᚖlaurakcleveᚋmealᚋgraphᚋmodelᚐIngredientInput(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.IngredientSetInput().Ingredients(ctx, &it, data); err != nil {
 				return it, err
 			}
 		}
@@ -9654,11 +9639,6 @@ func (ec *executionContext) unmarshalNIngredientInput2ᚕᚖlaurakcleveᚋmeal�
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNIngredientItemInput2laurakcleveᚋmealᚋgraphᚋmodelᚐIngredientItemInput(ctx context.Context, v interface{}) (model.IngredientItemInput, error) {
-	res, err := ec.unmarshalInputIngredientItemInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNIngredientItemInput2ᚖlaurakcleveᚋmealᚋgraphᚋmodelᚐIngredientItemInput(ctx context.Context, v interface{}) (*model.IngredientItemInput, error) {
