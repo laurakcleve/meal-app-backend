@@ -119,7 +119,7 @@ func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*
 func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
 	item := model.Item{}
 	var tempID int
-	
+
 	err := db.Conn.QueryRow(context.Background(), `
 		SELECT item.id, name, default_shelflife, item_type FROM item 
 		INNER JOIN ingredient ON ingredient.item_id = item.id
@@ -179,7 +179,7 @@ func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.Ingr
 func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryItem) (*model.Item, error) {
 	item := model.Item{}
 	var tempID int
-	
+
 	err := db.Conn.QueryRow(context.Background(), `
       SELECT item.id, name, default_shelflife, item_type
       FROM item
@@ -214,7 +214,7 @@ func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.Invento
 
 	location.ID = strconv.Itoa(id)
 
-	if err != nil { 
+	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
@@ -626,13 +626,13 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 	var itemID int
 
 	updatedInventoryItem := model.InventoryItem{
-		ID: id,
+		ID:         id,
 		Expiration: expiration,
-		AddDate: addDate,
-		Amount: amount,
+		AddDate:    addDate,
+		Amount:     amount,
 	}
 	idNum, _ := strconv.Atoi(id)
-	
+
 	updateErr := db.Conn.QueryRow(context.Background(), `
 		UPDATE inventory_item
 		SET add_date = $2,
@@ -761,7 +761,7 @@ func (r *mutationResolver) EditItem(ctx context.Context, id string, name string,
 
 func (r *mutationResolver) AddDish(ctx context.Context, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error) {
 	dish := model.Dish{
-		Name: name,
+		Name:         name,
 		IsActiveDish: &isActive,
 	}
 	var dishID int
@@ -827,7 +827,7 @@ func (r *mutationResolver) AddDish(ctx context.Context, name string, tags []*str
 				SELECT $2 AS ingredient_set_id, id AS item_id
 				FROM (SELECT id FROM item_id_for_insert) AS the_id
 				RETURNING *
-			`, ingredient.Item.Name, setID)	
+			`, ingredient.Item.Name, setID)
 			if ingredientErr != nil {
 				return nil, ingredientErr
 			}
@@ -839,8 +839,8 @@ func (r *mutationResolver) AddDish(ctx context.Context, name string, tags []*str
 
 func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error) {
 	updatedDish := model.Dish{
-		ID: id,
-		Name: name,
+		ID:           id,
+		Name:         name,
 		IsActiveDish: &isActive,
 	}
 	idNum, _ := strconv.Atoi(id)
@@ -935,7 +935,7 @@ func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name strin
 				SELECT $2 AS ingredient_set_id, id AS item_id
 				FROM (SELECT id FROM item_id_for_insert) AS the_id
 				RETURNING *
-			`, ingredient.Item.Name, setID)	
+			`, ingredient.Item.Name, setID)
 			if ingredientErr != nil {
 				return nil, ingredientErr
 			}
