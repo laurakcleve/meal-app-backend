@@ -559,8 +559,10 @@ func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*
 func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error) {
 	inventoryItem := model.InventoryItem{}
 	var tempID int
+	var locationID int
+	var itemID int
 
-	err := db.Conn.QueryRow(context.Background(), `
+	insertErr := db.Conn.QueryRow(context.Background(), `
       WITH retrieved_item_id AS (
         SELECT item_id_for_insert($1, CAST($6 AS itemtype))
       ), retrieved_location_id AS (
@@ -574,7 +576,7 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
         $4 AS amount,
         (SELECT * FROM retrieved_location_id) AS location_id
       FROM GENERATE_SERIES(1, $7)
-      RETURNING inventory_item.id, expiration, add_date, amount
+      RETURNING inventory_item.id, expiration, add_date, amount, location_id, inventory_item.item_id
 	`, name,
 		addDate,
 		expiration,
@@ -582,16 +584,41 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
 		location,
 		itemType,
 		number,
+		locationID,
 	).Scan(
 		&tempID,
 		&inventoryItem.Expiration,
 		&inventoryItem.AddDate,
 		&inventoryItem.Amount,
+		&itemID,
 	)
+
+	if insertErr != nil {
+		return nil, insertErr
+	}
 
 	inventoryItem.ID = strconv.Itoa(tempID)
 
-	return &inventoryItem, err
+	_, shelflifeErr := db.Conn.Exec(context.Background(), `
+		UPDATE item
+		SET default_shelflife = $1, default_location_id = $2
+		WHERE id = $3
+	`, defaultShelflife, locationID, itemID)
+
+	if shelflifeErr != nil {
+		return nil, shelflifeErr
+	}
+
+	_, categoryErr := db.Conn.Exec(context.Background(), `
+		UPDATE item
+		SET category_id = (SELECT category_id_for_insert($1))
+		WHERE id = $2
+	`, category, itemID)
+
+	if categoryErr != nil {
+		return nil, categoryErr
+	}
+	return &inventoryItem, nil
 }
 
 func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error) {
