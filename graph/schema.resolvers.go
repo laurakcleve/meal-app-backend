@@ -966,7 +966,7 @@ func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date 
 	var dateID int
 
 	err := db.Conn.QueryRow(context.Background(), `
-		INSERT INTO dish_date(dish_id, dishDate)
+		INSERT INTO dish_date(dish_id, date)
 		VALUES($1, $2)
 		RETURNING id
 	`, dishID, dishDate).Scan(&dateID)
