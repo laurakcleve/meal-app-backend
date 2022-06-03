@@ -960,16 +960,14 @@ func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, err
 }
 
 func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error) {
-	dishDate := model.DishDate{
-		Date: date,
-	}
+	dishDate := model.DishDate{}
 	var dateID int
 
 	err := db.Conn.QueryRow(context.Background(), `
 		INSERT INTO dish_date(dish_id, date)
 		VALUES($1, $2)
-		RETURNING id
-	`, dishID, dishDate).Scan(&dateID)
+		RETURNING id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
+	`, dishID, date).Scan(&dateID, &dishDate.Date)
 
 	dishDate.ID = strconv.Itoa(dateID)
 
