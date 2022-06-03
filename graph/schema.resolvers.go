@@ -684,6 +684,13 @@ func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (
 
 func (r *mutationResolver) EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error) {
 	// TODO: change name to UpdateItem (need to update client as well)
+
+	// TODO: EditItem currently only accepts existing categories
+	// and locations. It should be changed to accept names, and then
+	// retrieve/insert the category/location via the database functions
+	// category_id_for_insert and location_id_for_insert.
+	// This requires changes to the front end as well.
+
 	idNum, _ := strconv.Atoi(id)
 
 	_, deleteErr := db.Conn.Exec(context.Background(), `
