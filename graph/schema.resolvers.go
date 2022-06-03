@@ -952,7 +952,20 @@ func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, err
 }
 
 func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error) {
-	panic(fmt.Errorf("AddDishDate not implemented"))
+	dishDate := model.DishDate{
+		Date: date,
+	}
+	var dateID int
+
+	err := db.Conn.QueryRow(context.Background(), `
+		INSERT INTO dish_date(dish_id, dishDate)
+		VALUES($1, $2)
+		RETURNING id
+	`, dishID, dishDate).Scan(&dateID)
+
+	dishDate.ID = strconv.Itoa(dateID)
+
+	return &dishDate, err
 }
 
 func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*int, error) {
