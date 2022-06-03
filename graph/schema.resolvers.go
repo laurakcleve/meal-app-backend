@@ -49,7 +49,7 @@ func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.Dish
 
 func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-      SELECT id, date
+      SELECT id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
 			FROM dish_date 
       WHERE dish_id = $1
       ORDER BY date DESC
