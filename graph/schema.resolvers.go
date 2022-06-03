@@ -265,9 +265,9 @@ func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.
 
 		err := rows.Scan(
 			&itemID,
-			item.Name,
-			item.DefaultShelflife,
-			item.ItemType,
+			&item.Name,
+			&item.DefaultShelflife,
+			&item.ItemType,
 		)
 		if err != nil {
 			return nil, err
