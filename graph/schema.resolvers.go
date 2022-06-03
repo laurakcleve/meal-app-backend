@@ -83,7 +83,37 @@ func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.Dis
 }
 
 func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*model.IngredientSet, error) {
-	panic(fmt.Errorf("Dish IngredientSets not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT id, optional 
+		FROM ingredient_set 
+		WHERE parent_item_id = $1
+	`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ingredientSets := []*model.IngredientSet{}
+
+	for rows.Next() {
+		var set model.IngredientSet
+		var setID int
+
+		err := rows.Scan(&setID, set.IsOptional)
+		if err != nil {
+			return nil, err
+		}
+
+		set.ID = strconv.Itoa(setID)
+		ingredientSets = append(ingredientSets, &set)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return ingredientSets, nil
 }
 
 func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
