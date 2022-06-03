@@ -117,7 +117,27 @@ func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*
 }
 
 func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*model.Item, error) {
-	panic(fmt.Errorf("Ingredient Item not implemented"))
+	item := model.Item{}
+	var tempID int
+	
+	err := db.Conn.QueryRow(context.Background(), `
+		SELECT item.id, name, default_shelflife, item_type FROM item 
+		INNER JOIN ingredient ON ingredient.item_id = item.id
+		WHERE ingredient.id = $1
+	`, obj.ID).Scan(
+		tempID,
+		item.Name,
+		item.DefaultShelflife,
+		item.ItemType,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	item.ID = strconv.Itoa(tempID)
+
+	return &item, nil
 }
 
 func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
