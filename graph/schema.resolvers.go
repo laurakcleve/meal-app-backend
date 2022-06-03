@@ -100,7 +100,7 @@ func (r *dishResolver) IngredientSets(ctx context.Context, obj *model.Dish) ([]*
 		var set model.IngredientSet
 		var setID int
 
-		err := rows.Scan(&setID, set.IsOptional)
+		err := rows.Scan(&setID, &set.IsOptional)
 		if err != nil {
 			return nil, err
 		}
