@@ -125,13 +125,14 @@ func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*
 		INNER JOIN ingredient ON ingredient.item_id = item.id
 		WHERE ingredient.id = $1
 	`, obj.ID).Scan(
-		tempID,
-		item.Name,
-		item.DefaultShelflife,
-		item.ItemType,
+		&tempID,
+		&item.Name,
+		&item.DefaultShelflife,
+		&item.ItemType,
 	)
 
 	if err != nil {
+		fmt.Println("Ingredient Item error:", err)
 		return nil, err
 	}
 
