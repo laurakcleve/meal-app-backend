@@ -497,7 +497,51 @@ func (r *mutationResolver) AddPurchaseItem(ctx context.Context, purchaseID strin
 }
 
 func (r *mutationResolver) UpdatePurchaseItem(ctx context.Context, id string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string) (*model.PurchaseItem, error) {
-	panic(fmt.Errorf("UpdatePurchaseItem not implemented"))
+	updatedItem := model.PurchaseItem{
+		ID: id,
+	}
+	idNum, _ := strconv.Atoi(id)
+
+	err := db.Conn.QueryRow(context.Background(), `
+      WITH retrieved_item_id AS (
+        SELECT item_id_for_insert($2) 
+      )
+      UPDATE purchase_item
+      SET item_id = (SELECT * FROM retrieved_item_id), 
+        price = $3, 
+        weight_amount = $4, 
+        weight_unit = $5, 
+        quantity_amount = $6, 
+        quantity_unit = $7
+      WHERE id = $1
+      RETURNING 
+        price, 
+        weight_amount,
+        weight_unit,
+        quantity_amount,
+        quantity_unit
+	`,
+		idNum,
+		name,
+		price,
+		weightAmount,
+		weightUnit,
+		quantityAmount,
+		quantityUnit,
+	).Scan(
+		&updatedItem.Price,
+		&updatedItem.WeightAmount,
+		&updatedItem.WeightUnit,
+		&updatedItem.QuantityAmount,
+		&updatedItem.QuantityUnit,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &updatedItem, nil
 }
 
 func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*int, error) {
