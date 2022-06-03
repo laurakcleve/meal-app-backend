@@ -31,7 +31,7 @@ func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.Dish
 		var tag model.DishTag
 		var tagID int
 
-		err := rows.Scan(&tagID, tag.Name)
+		err := rows.Scan(&tagID, &tag.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.Dis
 		var date model.DishDate
 		var dateID int
 
-		err := rows.Scan(&dateID, date.Date)
+		err := rows.Scan(&dateID, &date.Date)
 		if err != nil {
 			return nil, err
 		}
@@ -187,10 +187,10 @@ func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryIt
         ON inventory_item.item_id = item.id
       WHERE inventory_item.id = $1
 	`, obj.ID).Scan(
-		tempID,
-		item.Name,
-		item.DefaultShelflife,
-		item.ItemType,
+		&tempID,
+		&item.Name,
+		&item.DefaultShelflife,
+		&item.ItemType,
 	)
 
 	if err != nil {
@@ -275,8 +275,8 @@ func (r *itemResolver) Dishes(ctx context.Context, obj *model.Item) ([]*model.Di
 
 		err := rows.Scan(
 			&dishID,
-			dish.Name,
-			dish.IsActiveDish,
+			&dish.Name,
+			&dish.IsActiveDish,
 		)
 		if err != nil {
 			return nil, err
