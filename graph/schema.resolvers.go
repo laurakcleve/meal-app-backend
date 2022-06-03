@@ -557,7 +557,41 @@ func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*
 }
 
 func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error) {
-	panic(fmt.Errorf("AddInventoryItem not implemented"))
+	inventoryItem := model.InventoryItem{}
+	var tempID int
+
+	err := db.Conn.QueryRow(context.Background(), `
+      WITH retrieved_item_id AS (
+        SELECT item_id_for_insert($1, CAST($6 AS itemtype))
+      ), retrieved_location_id AS (
+        SELECT location_id_for_insert($5)
+      )
+      INSERT INTO inventory_item(item_id, add_date, expiration, amount, location_id)
+      SELECT
+        (SELECT * FROM retrieved_item_id),
+        $2 AS add_date,
+        $3 AS expiration,
+        $4 AS amount,
+        (SELECT * FROM retrieved_location_id) AS location_id
+      FROM GENERATE_SERIES(1, $7)
+      RETURNING inventory_item.id, expiration, add_date, amount
+	`, name,
+		addDate,
+		expiration,
+		amount,
+		location,
+		itemType,
+		number,
+	).Scan(
+		&tempID,
+		&inventoryItem.Expiration,
+		&inventoryItem.AddDate,
+		&inventoryItem.Amount,
+	)
+
+	inventoryItem.ID = strconv.Itoa(tempID)
+
+	return &inventoryItem, err
 }
 
 func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error) {
