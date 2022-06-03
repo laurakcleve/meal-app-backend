@@ -204,16 +204,16 @@ type MutationResolver interface {
 	DeletePurchase(ctx context.Context, id string) (*int, error)
 	AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error)
 	UpdatePurchaseItem(ctx context.Context, id string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string) (*model.PurchaseItem, error)
-	DeletePurchaseItem(ctx context.Context, id string) (*string, error)
+	DeletePurchaseItem(ctx context.Context, id string) (*int, error)
 	AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error)
 	UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error)
-	DeleteInventoryItem(ctx context.Context, id string) (*string, error)
+	DeleteInventoryItem(ctx context.Context, id string) (*int, error)
 	EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error)
 	AddDish(ctx context.Context, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error)
 	UpdateDish(ctx context.Context, id string, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error)
-	DeleteDish(ctx context.Context, id string) (string, error)
+	DeleteDish(ctx context.Context, id string) (*int, error)
 	AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error)
-	DeleteDishDate(ctx context.Context, id string) (*string, error)
+	DeleteDishDate(ctx context.Context, id string) (*int, error)
 }
 type PurchaseResolver interface {
 	Location(ctx context.Context, obj *model.Purchase) (*model.PurchaseLocation, error)
@@ -1023,7 +1023,7 @@ var sources = []*ast.Source{
       quantityAmount: Float
       quantityUnit: String
     ): PurchaseItem!
-    deletePurchaseItem(id: ID!): ID
+    deletePurchaseItem(id: ID!): Int
     addInventoryItem(
       name: String!
       addDate: String
@@ -1044,7 +1044,7 @@ var sources = []*ast.Source{
       category: String
       itemType: String
     ): InventoryItem!
-    deleteInventoryItem(id: ID!): ID
+    deleteInventoryItem(id: ID!): Int
     editItem(
       id: ID!
       name: String!
@@ -1067,9 +1067,9 @@ var sources = []*ast.Source{
       isActive: Boolean!
       ingredientSets: [IngredientSetInput]!
     ): Dish!
-    deleteDish(id: ID!): String!
+    deleteDish(id: ID!): Int
     addDishDate(dishId: ID!, date: String!): DishDate!
-    deleteDishDate(id: ID!): ID
+    deleteDishDate(id: ID!): Int
   }
 
   type Item {
@@ -3896,9 +3896,9 @@ func (ec *executionContext) _Mutation_deletePurchaseItem(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deletePurchaseItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3908,7 +3908,7 @@ func (ec *executionContext) fieldContext_Mutation_deletePurchaseItem(ctx context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -4086,9 +4086,9 @@ func (ec *executionContext) _Mutation_deleteInventoryItem(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteInventoryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4098,7 +4098,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteInventoryItem(ctx contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -4349,14 +4349,11 @@ func (ec *executionContext) _Mutation_deleteDish(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4366,7 +4363,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteDish(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -4467,9 +4464,9 @@ func (ec *executionContext) _Mutation_deleteDishDate(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteDishDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4479,7 +4476,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteDishDate(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -8645,9 +8642,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_deleteDish(ctx, field)
 			})
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "addDishDate":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {

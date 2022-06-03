@@ -42,7 +42,7 @@
       quantityAmount: Float
       quantityUnit: String
     ): PurchaseItem!
-    deletePurchaseItem(id: ID!): ID
+    deletePurchaseItem(id: ID!): Int
     addInventoryItem(
       name: String!
       addDate: String
@@ -63,7 +63,7 @@
       category: String
       itemType: String
     ): InventoryItem!
-    deleteInventoryItem(id: ID!): ID
+    deleteInventoryItem(id: ID!): Int
     editItem(
       id: ID!
       name: String!
@@ -86,9 +86,9 @@
       isActive: Boolean!
       ingredientSets: [IngredientSetInput]!
     ): Dish!
-    deleteDish(id: ID!): String!
+    deleteDish(id: ID!): Int
     addDishDate(dishId: ID!, date: String!): DishDate!
-    deleteDishDate(id: ID!): ID
+    deleteDishDate(id: ID!): Int
   }
 
   type Item {

@@ -385,7 +385,7 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 	panic(fmt.Errorf("UpdateInventoryItem not implemented"))
 }
 
-func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*string, error) {
+func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*int, error) {
 	panic(fmt.Errorf("DeleteInventoryItem not implemented"))
 }
 
@@ -401,7 +401,7 @@ func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name strin
 	panic(fmt.Errorf("UpdateDish not implemented"))
 }
 
-func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (string, error) {
+func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, error) {
 	panic(fmt.Errorf("DeleteDish not implemented"))
 }
 
@@ -409,7 +409,7 @@ func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date 
 	panic(fmt.Errorf("AddDishDate not implemented"))
 }
 
-func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*string, error) {
+func (r *mutationResolver) DeleteDishDate(ctx context.Context, id string) (*int, error) {
 	panic(fmt.Errorf("DeleteDishDate not implemented"))
 }
 
