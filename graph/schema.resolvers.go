@@ -143,7 +143,7 @@ func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*
 
 func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-		SELECT ingredient.id, is_in_inventory
+		SELECT ingredient.id
 		FROM ingredient 
 		JOIN item on item.id = ingredient.item_id
 		WHERE ingredient_set_id = $1
@@ -160,7 +160,7 @@ func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.Ingr
 		var ingredient model.Ingredient
 		var ingredientID int
 
-		err := rows.Scan(&ingredientID, &ingredient.IsInInventory)
+		err := rows.Scan(&ingredientID)
 		if err != nil {
 			return nil, err
 		}
