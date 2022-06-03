@@ -671,7 +671,15 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 }
 
 func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*int, error) {
-	panic(fmt.Errorf("DeleteInventoryItem not implemented"))
+	result, err := db.Conn.Exec(context.Background(), `
+      DELETE FROM inventory_item
+      WHERE id = $1
+	`, id)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return rows, err
 }
 
 func (r *mutationResolver) EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error) {
