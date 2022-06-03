@@ -577,7 +577,13 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
         $4 AS amount,
         (SELECT * FROM retrieved_location_id) AS location_id
       FROM GENERATE_SERIES(1, $7)
-      RETURNING inventory_item.id, expiration, add_date, amount, location_id, inventory_item.item_id
+      RETURNING 
+				inventory_item.id, 
+				CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT), 
+				CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT), 
+				amount, 
+				location_id, 
+				inventory_item.item_id
 	`, name,
 		addDate,
 		expiration,
@@ -627,8 +633,6 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 
 	updatedInventoryItem := model.InventoryItem{
 		ID:         id,
-		Expiration: expiration,
-		AddDate:    addDate,
 		Amount:     amount,
 	}
 	idNum, _ := strconv.Atoi(id)
@@ -639,9 +643,14 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 				amount = $3,
 				expiration = $4
 		WHERE id = $1
-		RETURNING item_id
+		RETURNING 
+			item_id,
+			CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT),
+			CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT)
 	`, idNum, addDate, amount, expiration).Scan(
 		&itemID,
+		&updatedInventoryItem.Expiration,
+		&updatedInventoryItem.AddDate,
 	)
 
 	if updateErr != nil {
@@ -1218,7 +1227,11 @@ func (r *queryResolver) Dish(ctx context.Context, id string) (*model.Dish, error
 
 func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryItem, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-    SELECT id, expiration, add_date, amount
+    SELECT 
+			id, 
+			CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT), 
+			CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT), 
+			amount
     FROM inventory_item 
     ORDER BY expiration ASC
 		`)
