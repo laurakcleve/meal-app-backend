@@ -141,11 +141,64 @@ func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*
 }
 
 func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
-	panic(fmt.Errorf("IngredientSet Ingredients not implemented"))
+	rows, err := db.Conn.Query(context.Background(), `
+		SELECT ingredient.id, is_in_inventory
+		FROM ingredient 
+		JOIN item on item.id = ingredient.item_id
+		WHERE ingredient_set_id = $1
+	`, obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ingredients := []*model.Ingredient{}
+
+	for rows.Next() {
+		var ingredient model.Ingredient
+		var ingredientID int
+
+		err := rows.Scan(&ingredientID, &ingredient.IsInInventory)
+		if err != nil {
+			return nil, err
+		}
+
+		ingredient.ID = strconv.Itoa(ingredientID)
+		ingredients = append(ingredients, &ingredient)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return ingredients, nil
 }
 
 func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryItem) (*model.Item, error) {
-	panic(fmt.Errorf("InventoryItem Item not implemented"))
+	item := model.Item{}
+	var tempID int
+	
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT item.id, name, default_shelflife, item_type
+      FROM item
+      INNER JOIN inventory_item
+        ON inventory_item.item_id = item.id
+      WHERE inventory_item.id = $1
+	`, obj.ID).Scan(
+		tempID,
+		item.Name,
+		item.DefaultShelflife,
+		item.ItemType,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	item.ID = strconv.Itoa(tempID)
+
+	return &item, nil
 }
 
 func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error) {
