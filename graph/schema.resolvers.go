@@ -398,7 +398,72 @@ func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (
 }
 
 func (r *mutationResolver) EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error) {
-	panic(fmt.Errorf("EditItem not implemented"))
+	// TODO: change name to UpdateItem (need to update client as well)
+	idNum, _ := strconv.Atoi(id)
+
+	_, deleteErr := db.Conn.Exec(context.Background(), `
+			DELETE FROM item_counts_as
+      WHERE specific_item_id = $1 
+		`,
+		idNum)
+
+	if deleteErr != nil {
+		fmt.Println("Error on delete:", deleteErr)
+		return nil, deleteErr
+	}
+
+	updatedItem := model.Item{
+		ID: id,
+	}
+
+	updateErr := db.Conn.QueryRow(context.Background(), `
+			UPDATE item
+      SET name = $2,
+          category_id = $3,
+          default_location_id = $4,
+          default_shelflife = $5,
+          item_type = $6
+      WHERE id = $1
+      RETURNING name, default_shelflife, item_type
+	`,
+		idNum,
+		name,
+		categoryID,
+		defaultLocationID,
+		defaultShelflife,
+		itemType,
+	).Scan(
+		&updatedItem.Name,
+		&updatedItem.DefaultShelflife,
+		&updatedItem.ItemType,
+	)
+
+	if updateErr != nil {
+		fmt.Println("Error on update:", updateErr)
+		return nil, updateErr
+	}
+
+	for _, item := range countsAs {
+		_, err := db.Conn.Exec(context.Background(), `
+				WITH retrieved_item_id AS (
+					SELECT item_id_for_insert($1)
+				)
+				INSERT INTO item_counts_as(specific_item_id, generic_item_id)
+				SELECT 
+					$2 as specific_item_id,
+					(SELECT * FROM retrieved_item_id) AS generic_item_id
+			`,
+			item,
+			idNum,
+		)
+
+		if err != nil {
+			fmt.Println("Error on insert:", err)
+			return nil, err
+		}
+	}
+
+	return &updatedItem, nil
 }
 
 func (r *mutationResolver) AddDish(ctx context.Context, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error) {
@@ -845,6 +910,7 @@ func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchas
 			FROM purchase
       WHERE id = $1
 		`, idNum).Scan(&purchase.Date)
+
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
