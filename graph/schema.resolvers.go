@@ -830,7 +830,111 @@ func (r *mutationResolver) AddDish(ctx context.Context, name string, tags []*str
 }
 
 func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error) {
-	panic(fmt.Errorf("UpdateDish not implemented"))
+	updatedDish := model.Dish{
+		ID: id,
+		Name: name,
+		IsActiveDish: &isActive,
+	}
+	idNum, _ := strconv.Atoi(id)
+
+	_, deleteTagsErr := db.Conn.Exec(context.Background(), `
+			DELETE FROM item_has_dish_tag
+			WHERE item_id = $1  
+		`,
+		idNum)
+
+	if deleteTagsErr != nil {
+		fmt.Println("Error on delete:", deleteTagsErr)
+		return nil, deleteTagsErr
+	}
+
+	_, deleteSetsErr := db.Conn.Exec(context.Background(), `
+      DELETE FROM ingredient_set
+      WHERE parent_item_id = $1
+		`,
+		idNum)
+
+	if deleteSetsErr != nil {
+		fmt.Println("Error on delete:", deleteSetsErr)
+		return nil, deleteSetsErr
+	}
+
+	_, updateErr := db.Conn.Exec(context.Background(), `
+		UPDATE item
+		SET name = $2, is_active_dish = $3
+		WHERE id = $1
+	`,
+		idNum,
+		name,
+		isActive,
+	)
+
+	if updateErr != nil {
+		fmt.Println("Error on update:", updateErr)
+		return nil, updateErr
+	}
+
+	for _, tag := range tags {
+		// These should be batched somehow
+		_, tagsErr := db.Conn.Exec(context.Background(), `
+			WITH retrieved_dish_tag_id AS (
+				SELECT tag_id_for_insert($2)
+			)
+			INSERT INTO item_has_dish_tag(item_id, dish_tag_id) 
+			SELECT 
+				$1 as item_id, 
+				(SELECT * FROM retrieved_dish_tag_id) AS dish_tag_id
+			RETURNING *
+		`, idNum, tag)
+
+		if tagsErr != nil {
+			return nil, tagsErr
+		}
+	}
+
+	for _, ingredientSet := range ingredientSets {
+		var setID int
+		setErr := db.Conn.QueryRow(context.Background(), `
+			INSERT INTO ingredient_set(parent_item_id, optional)
+			VALUES($1, $2)
+			RETURNING ingredient_set.id
+		`, idNum, ingredientSet.IsOptional).Scan(&setID)
+		if setErr != nil {
+			return nil, setErr
+		}
+
+		for _, ingredient := range ingredientSet.Ingredients {
+			_, ingredientErr := db.Conn.Exec(context.Background(), `
+				WITH new_item_id AS (
+					INSERT INTO item(name, item_type)
+					SELECT $1, 'baseItem'
+					WHERE NOT EXISTS (
+						SELECT 1
+						FROM item
+						WHERE name = $1
+					)
+					RETURNING id
+				), existing_item_id AS (
+					SELECT id
+					FROM item
+					WHERE name = $1
+				), item_id_for_insert AS (
+					SELECT id 
+					FROM new_item_id 
+					UNION SELECT id FROM existing_item_id
+				)
+				INSERT INTO ingredient(ingredient_set_id, item_id)
+				SELECT $2 AS ingredient_set_id, id AS item_id
+				FROM (SELECT id FROM item_id_for_insert) AS the_id
+				RETURNING *
+			`, ingredient.Item.Name, setID)	
+			if ingredientErr != nil {
+				return nil, ingredientErr
+			}
+		}
+	}
+
+	return &updatedDish, nil
 }
 
 func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, error) {
