@@ -373,8 +373,16 @@ func (r *mutationResolver) UpdatePurchaseItem(ctx context.Context, id string, na
 	panic(fmt.Errorf("UpdatePurchaseItem not implemented"))
 }
 
-func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*string, error) {
-	panic(fmt.Errorf("DeletePurchaseItem not implemented"))
+func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*int, error) {
+	result, err := db.Conn.Exec(context.Background(), `
+      DELETE FROM purchase_item
+      WHERE id = $1
+	`, id)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return rows, err
 }
 
 func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error) {
