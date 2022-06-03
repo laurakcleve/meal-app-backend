@@ -591,12 +591,12 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
 		location,
 		itemType,
 		number,
-		locationID,
 	).Scan(
 		&tempID,
 		&inventoryItem.Expiration,
 		&inventoryItem.AddDate,
 		&inventoryItem.Amount,
+		&locationID,
 		&itemID,
 	)
 
