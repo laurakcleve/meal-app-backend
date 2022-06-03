@@ -202,7 +202,23 @@ func (r *inventoryItemResolver) Item(ctx context.Context, obj *model.InventoryIt
 }
 
 func (r *inventoryItemResolver) Location(ctx context.Context, obj *model.InventoryItem) (*model.ItemLocation, error) {
-	panic(fmt.Errorf("InventoryItem Location not implemented"))
+	var location model.ItemLocation
+	var id int
+	err := db.Conn.QueryRow(context.Background(), `
+      SELECT inventory_item_location.id, name
+      FROM inventory_item_location
+      INNER JOIN item on item.default_location_id = inventory_item_location.id
+      WHERE inventory_item.id = $1
+		`, obj.ID).Scan(&id, &location.Name)
+
+	location.ID = strconv.Itoa(id)
+
+	if err != nil { 
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &location, nil
 }
 
 func (r *itemResolver) Category(ctx context.Context, obj *model.Item) (*model.ItemCategory, error) {
