@@ -938,7 +938,17 @@ func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name strin
 }
 
 func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, error) {
-	panic(fmt.Errorf("DeleteDish not implemented"))
+	idNum, _ := strconv.Atoi(id)
+
+	result, err := db.Conn.Exec(context.Background(), `
+      DELETE FROM item
+      WHERE id = $1
+	`, idNum)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return rows, err
 }
 
 func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error) {
