@@ -436,7 +436,15 @@ func (r *mutationResolver) AddPurchase(ctx context.Context, date string, locatio
 }
 
 func (r *mutationResolver) DeletePurchase(ctx context.Context, id string) (*int, error) {
-	panic(fmt.Errorf("DeletePurchase not implemented"))
+	result, err := db.Conn.Exec(context.Background(), `
+      DELETE FROM purchase
+      WHERE id = $1
+	`, id)
+
+	rows := new(int)
+	*rows = int(result.RowsAffected())
+
+	return rows, err
 }
 
 func (r *mutationResolver) AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error) {
