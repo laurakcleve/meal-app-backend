@@ -622,7 +622,52 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
 }
 
 func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error) {
-	panic(fmt.Errorf("UpdateInventoryItem not implemented"))
+	var itemID int
+
+	updatedInventoryItem := model.InventoryItem{
+		ID: id,
+		Expiration: expiration,
+		AddDate: addDate,
+		Amount: amount,
+	}
+	idNum, _ := strconv.Atoi(id)
+	
+	updateErr := db.Conn.QueryRow(context.Background(), `
+		UPDATE inventory_item
+		SET add_date = $2,
+				amount = $3,
+				expiration = $4
+		WHERE id = $1
+		RETURNING item_id
+	`, idNum, addDate, amount, expiration).Scan(
+		&itemID,
+	)
+
+	if updateErr != nil {
+		return nil, updateErr
+	}
+
+	_, categoryErr := db.Conn.Exec(context.Background(), `
+		UPDATE item
+		SET category_id = (SELECT category_id_for_insert($1))
+		WHERE id = $2
+	`, category, itemID)
+
+	if categoryErr != nil {
+		return nil, categoryErr
+	}
+
+	_, locationErr := db.Conn.Exec(context.Background(), `
+		UPDATE inventory_item
+		SET location_id = (SELECT location_id_for_insert($1))
+		WHERE id = $2
+	`, location, idNum)
+
+	if locationErr != nil {
+		return nil, locationErr
+	}
+
+	return &updatedInventoryItem, nil
 }
 
 func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*int, error) {
