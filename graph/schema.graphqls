@@ -42,7 +42,7 @@
       quantityAmount: Float
       quantityUnit: String
     ): PurchaseItem!
-    deletePurchaseItem(id: ID!): Int
+    deletePurchaseItem(id: ID!): ID
     addInventoryItem(
       name: String!
       addDate: String

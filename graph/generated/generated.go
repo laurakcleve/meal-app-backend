@@ -202,7 +202,7 @@ type MutationResolver interface {
 	DeletePurchase(ctx context.Context, id string) (*int, error)
 	AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error)
 	UpdatePurchaseItem(ctx context.Context, id string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string) (*model.PurchaseItem, error)
-	DeletePurchaseItem(ctx context.Context, id string) (*int, error)
+	DeletePurchaseItem(ctx context.Context, id string) (*string, error)
 	AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error)
 	UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error)
 	DeleteInventoryItem(ctx context.Context, id string) (*int, error)
@@ -1014,7 +1014,7 @@ var sources = []*ast.Source{
       quantityAmount: Float
       quantityUnit: String
     ): PurchaseItem!
-    deletePurchaseItem(id: ID!): Int
+    deletePurchaseItem(id: ID!): ID
     addInventoryItem(
       name: String!
       addDate: String
@@ -3887,9 +3887,9 @@ func (ec *executionContext) _Mutation_deletePurchaseItem(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deletePurchaseItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3899,7 +3899,7 @@ func (ec *executionContext) fieldContext_Mutation_deletePurchaseItem(ctx context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {

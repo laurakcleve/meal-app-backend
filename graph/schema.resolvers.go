@@ -545,16 +545,13 @@ func (r *mutationResolver) UpdatePurchaseItem(ctx context.Context, id string, na
 	return &updatedItem, nil
 }
 
-func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*int, error) {
-	result, err := db.Conn.Exec(context.Background(), `
+func (r *mutationResolver) DeletePurchaseItem(ctx context.Context, id string) (*string, error) {
+	_, err := db.Conn.Exec(context.Background(), `
       DELETE FROM purchase_item
       WHERE id = $1
 	`, id)
 
-	rows := new(int)
-	*rows = int(result.RowsAffected())
-
-	return rows, err
+	return &id, err
 }
 
 func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error) {
@@ -632,8 +629,8 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 	var itemID int
 
 	updatedInventoryItem := model.InventoryItem{
-		ID:         id,
-		Amount:     amount,
+		ID:     id,
+		Amount: amount,
 	}
 	idNum, _ := strconv.Atoi(id)
 
