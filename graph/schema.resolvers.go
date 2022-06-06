@@ -404,16 +404,13 @@ func (r *itemResolver) CountsAs(ctx context.Context, obj *model.Item) ([]*model.
 	return countsAsItems, nil
 }
 
-func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*int, error) {
-	result, err := db.Conn.Exec(context.Background(), `
+func (r *mutationResolver) DeleteItem(ctx context.Context, id string) (*string, error) {
+	_, err := db.Conn.Exec(context.Background(), `
       DELETE FROM item
       WHERE id = $1
 	`, id)
 
-	rows := new(int)
-	*rows = int(result.RowsAffected())
-
-	return rows, err
+	return &id, err
 }
 
 func (r *mutationResolver) AddPurchase(ctx context.Context, date string, location string) (*model.Purchase, error) {
@@ -436,16 +433,13 @@ func (r *mutationResolver) AddPurchase(ctx context.Context, date string, locatio
 	return &purchase, err
 }
 
-func (r *mutationResolver) DeletePurchase(ctx context.Context, id string) (*int, error) {
-	result, err := db.Conn.Exec(context.Background(), `
+func (r *mutationResolver) DeletePurchase(ctx context.Context, id string) (*string, error) {
+	_, err := db.Conn.Exec(context.Background(), `
       DELETE FROM purchase
       WHERE id = $1
 	`, id)
 
-	rows := new(int)
-	*rows = int(result.RowsAffected())
-
-	return rows, err
+	return &id, err
 }
 
 func (r *mutationResolver) AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error) {
@@ -677,16 +671,13 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 	return &updatedInventoryItem, nil
 }
 
-func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*int, error) {
-	result, err := db.Conn.Exec(context.Background(), `
+func (r *mutationResolver) DeleteInventoryItem(ctx context.Context, id string) (*string, error) {
+	_, err := db.Conn.Exec(context.Background(), `
       DELETE FROM inventory_item
       WHERE id = $1
 	`, id)
 
-	rows := new(int)
-	*rows = int(result.RowsAffected())
-
-	return rows, err
+	return &id, err
 }
 
 func (r *mutationResolver) EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error) {
@@ -951,18 +942,15 @@ func (r *mutationResolver) UpdateDish(ctx context.Context, id string, name strin
 	return &updatedDish, nil
 }
 
-func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*int, error) {
+func (r *mutationResolver) DeleteDish(ctx context.Context, id string) (*string, error) {
 	idNum, _ := strconv.Atoi(id)
 
-	result, err := db.Conn.Exec(context.Background(), `
+	_, err := db.Conn.Exec(context.Background(), `
       DELETE FROM item
       WHERE id = $1
 	`, idNum)
 
-	rows := new(int)
-	*rows = int(result.RowsAffected())
-
-	return rows, err
+	return &id, err
 }
 
 func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error) {

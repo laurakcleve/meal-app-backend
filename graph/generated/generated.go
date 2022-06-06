@@ -197,19 +197,19 @@ type ItemResolver interface {
 	CountsAs(ctx context.Context, obj *model.Item) ([]*model.Item, error)
 }
 type MutationResolver interface {
-	DeleteItem(ctx context.Context, id string) (*int, error)
+	DeleteItem(ctx context.Context, id string) (*string, error)
 	AddPurchase(ctx context.Context, date string, location string) (*model.Purchase, error)
-	DeletePurchase(ctx context.Context, id string) (*int, error)
+	DeletePurchase(ctx context.Context, id string) (*string, error)
 	AddPurchaseItem(ctx context.Context, purchaseID string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string, number int, itemType string) (*model.PurchaseItem, error)
 	UpdatePurchaseItem(ctx context.Context, id string, name string, price *float64, weightAmount *float64, weightUnit *string, quantityAmount *float64, quantityUnit *string) (*model.PurchaseItem, error)
 	DeletePurchaseItem(ctx context.Context, id string) (*string, error)
 	AddInventoryItem(ctx context.Context, name string, addDate *string, expiration *string, amount *string, defaultShelflife *string, category *string, location *string, itemType string, number int) (*model.InventoryItem, error)
 	UpdateInventoryItem(ctx context.Context, id string, addDate *string, expiration *string, amount *string, location *string, category *string, itemType *string) (*model.InventoryItem, error)
-	DeleteInventoryItem(ctx context.Context, id string) (*int, error)
+	DeleteInventoryItem(ctx context.Context, id string) (*string, error)
 	EditItem(ctx context.Context, id string, name string, categoryID *int, defaultLocationID *int, defaultShelflife *int, itemType string, countsAs []*string) (*model.Item, error)
 	AddDish(ctx context.Context, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error)
 	UpdateDish(ctx context.Context, id string, name string, tags []*string, isActive bool, ingredientSets []*model.IngredientSetInput) (*model.Dish, error)
-	DeleteDish(ctx context.Context, id string) (*int, error)
+	DeleteDish(ctx context.Context, id string) (*string, error)
 	AddDishDate(ctx context.Context, dishID string, date string) (*model.DishDate, error)
 	DeleteDishDate(ctx context.Context, id string) (*string, error)
 }
@@ -974,197 +974,197 @@ var sources = []*ast.Source{
 #
 # https://gqlgen.com/getting-started/
 
-  type Query {
-    items: [Item]!
-    itemById(id: ID!): Item
-    itemByName(name: String!): Item
-    dishes: [Dish]!
-    dish(id: ID!): Dish
-    inventoryItems: [InventoryItem]!
-    inventoryItem(id: ID!): InventoryItem
-    itemLocations: [ItemLocation]!
-    itemCategories: [ItemCategory]!
-    dishTags: [DishTag]!
-    purchases: [Purchase]!
-    purchase(id: ID!): Purchase
-    purchaseLocations: [PurchaseLocation]
-  }
+type Query {
+  items: [Item]!
+  itemById(id: ID!): Item
+  itemByName(name: String!): Item
+  dishes: [Dish]!
+  dish(id: ID!): Dish
+  inventoryItems: [InventoryItem]!
+  inventoryItem(id: ID!): InventoryItem
+  itemLocations: [ItemLocation]!
+  itemCategories: [ItemCategory]!
+  dishTags: [DishTag]!
+  purchases: [Purchase]!
+  purchase(id: ID!): Purchase
+  purchaseLocations: [PurchaseLocation]
+}
 
-  type Mutation {
-    deleteItem(id: ID!): Int
-    addPurchase(date: String!, location: String!): Purchase!
-    deletePurchase(id: ID!): Int
-    addPurchaseItem(
-      purchaseId: ID!
-      name: String!
-      price: Float
-      weightAmount: Float
-      weightUnit: String
-      quantityAmount: Float
-      quantityUnit: String
-      number: Int!
-      itemType: String!
-    ): PurchaseItem!
-    updatePurchaseItem(
-      id: ID!
-      name: String!
-      price: Float
-      weightAmount: Float
-      weightUnit: String
-      quantityAmount: Float
-      quantityUnit: String
-    ): PurchaseItem!
-    deletePurchaseItem(id: ID!): ID
-    addInventoryItem(
-      name: String!
-      addDate: String
-      expiration: String
-      amount: String
-      defaultShelflife: String
-      category: String
-      location: String
-      itemType: String!
-      number: Int!
-    ): InventoryItem!
-    updateInventoryItem(
-      id: ID!
-      addDate: String
-      expiration: String
-      amount: String
-      location: String
-      category: String
-      itemType: String
-    ): InventoryItem!
-    deleteInventoryItem(id: ID!): Int
-    editItem(
-      id: ID!
-      name: String!
-      categoryId: Int
-      defaultLocationId: Int
-      defaultShelflife: Int
-      itemType: String!
-      countsAs: [String]
-    ): Item!
-    addDish(
-      name: String!
-      tags: [String]
-      isActive: Boolean!
-      ingredientSets: [IngredientSetInput]!
-    ): Dish!
-    updateDish(
-      id: ID!
-      name: String!
-      tags: [String]!
-      isActive: Boolean!
-      ingredientSets: [IngredientSetInput]!
-    ): Dish!
-    deleteDish(id: ID!): Int
-    addDishDate(dishId: ID!, date: String!): DishDate!
-    deleteDishDate(id: ID!): ID
-  }
-
-  type Item {
-    id: ID!
+type Mutation {
+  deleteItem(id: ID!): ID
+  addPurchase(date: String!, location: String!): Purchase!
+  deletePurchase(id: ID!): ID
+  addPurchaseItem(
+    purchaseId: ID!
     name: String!
-    category: ItemCategory
-    dishes: [Dish]
-    defaultLocation: ItemLocation
-    defaultShelflife: Int
-    itemType: String!
-    purchases: [PurchaseItem]
-    countsAs: [Item]
-  }
-
-  type ItemCategory {
-    id: ID!
-    name: String!
-  }
-
-  type Dish {
-    id: ID!
-    name: String!
-    tags: [DishTag]
-    isActiveDish: Boolean
-    dates: [DishDate]
-    ingredientSets: [IngredientSet]
-  }
-
-  type DishTag {
-    id: ID!
-    name: String!
-  }
-
-  type DishDate {
-    id: ID!
-    date: String!
-  }
-
-  type IngredientSet {
-    id: ID!
-    isOptional: Boolean
-    ingredients: [Ingredient]
-  }
-
-  type Ingredient {
-    id: ID!
-    item: Item!
-    isInInventory: Boolean
-  }
-
-  type InventoryItem {
-    id: ID!
-    item: Item!
-    location: ItemLocation!
-    expiration: String
-    addDate: String
-    amount: String
-  }
-
-  type ItemLocation {
-    id: ID!
-    name: String!
-  }
-
-  type Purchase {
-    id: ID!
-    date: String!
-    location: PurchaseLocation
-    items: [PurchaseItem]!
-  }
-
-  type PurchaseLocation {
-    id: ID!
-    name: String!
-  }
-
-  type PurchaseItem {
-    id: ID!
-    item: Item!
     price: Float
     weightAmount: Float
     weightUnit: String
     quantityAmount: Float
     quantityUnit: String
-    purchaseId: Int
-    purchase: Purchase
-  }
-
-  input IngredientSetInput {
+    number: Int!
+    itemType: String!
+  ): PurchaseItem!
+  updatePurchaseItem(
     id: ID!
-    isOptional: Boolean!
-    ingredients: [IngredientInput]!
-  }
-
-  input IngredientInput {
-    id: ID!
-    item: IngredientItemInput!
-    isInInventory: Boolean
-  }
-
-  input IngredientItemInput {
-    id: ID
     name: String!
-  }
+    price: Float
+    weightAmount: Float
+    weightUnit: String
+    quantityAmount: Float
+    quantityUnit: String
+  ): PurchaseItem!
+  deletePurchaseItem(id: ID!): ID
+  addInventoryItem(
+    name: String!
+    addDate: String
+    expiration: String
+    amount: String
+    defaultShelflife: String
+    category: String
+    location: String
+    itemType: String!
+    number: Int!
+  ): InventoryItem!
+  updateInventoryItem(
+    id: ID!
+    addDate: String
+    expiration: String
+    amount: String
+    location: String
+    category: String
+    itemType: String
+  ): InventoryItem!
+  deleteInventoryItem(id: ID!): ID
+  editItem(
+    id: ID!
+    name: String!
+    categoryId: Int
+    defaultLocationId: Int
+    defaultShelflife: Int
+    itemType: String!
+    countsAs: [String]
+  ): Item!
+  addDish(
+    name: String!
+    tags: [String]
+    isActive: Boolean!
+    ingredientSets: [IngredientSetInput]!
+  ): Dish!
+  updateDish(
+    id: ID!
+    name: String!
+    tags: [String]!
+    isActive: Boolean!
+    ingredientSets: [IngredientSetInput]!
+  ): Dish!
+  deleteDish(id: ID!): ID
+  addDishDate(dishId: ID!, date: String!): DishDate!
+  deleteDishDate(id: ID!): ID
+}
+
+type Item {
+  id: ID!
+  name: String!
+  category: ItemCategory
+  dishes: [Dish]
+  defaultLocation: ItemLocation
+  defaultShelflife: Int
+  itemType: String!
+  purchases: [PurchaseItem]
+  countsAs: [Item]
+}
+
+type ItemCategory {
+  id: ID!
+  name: String!
+}
+
+type Dish {
+  id: ID!
+  name: String!
+  tags: [DishTag]
+  isActiveDish: Boolean
+  dates: [DishDate]
+  ingredientSets: [IngredientSet]
+}
+
+type DishTag {
+  id: ID!
+  name: String!
+}
+
+type DishDate {
+  id: ID!
+  date: String!
+}
+
+type IngredientSet {
+  id: ID!
+  isOptional: Boolean
+  ingredients: [Ingredient]
+}
+
+type Ingredient {
+  id: ID!
+  item: Item!
+  isInInventory: Boolean
+}
+
+type InventoryItem {
+  id: ID!
+  item: Item!
+  location: ItemLocation!
+  expiration: String
+  addDate: String
+  amount: String
+}
+
+type ItemLocation {
+  id: ID!
+  name: String!
+}
+
+type Purchase {
+  id: ID!
+  date: String!
+  location: PurchaseLocation
+  items: [PurchaseItem]!
+}
+
+type PurchaseLocation {
+  id: ID!
+  name: String!
+}
+
+type PurchaseItem {
+  id: ID!
+  item: Item!
+  price: Float
+  weightAmount: Float
+  weightUnit: String
+  quantityAmount: Float
+  quantityUnit: String
+  purchaseId: Int
+  purchase: Purchase
+}
+
+input IngredientSetInput {
+  id: ID!
+  isOptional: Boolean!
+  ingredients: [IngredientInput]!
+}
+
+input IngredientInput {
+  id: ID!
+  item: IngredientItemInput!
+  isInInventory: Boolean
+}
+
+input IngredientItemInput {
+  id: ID
+  name: String!
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -3568,9 +3568,9 @@ func (ec *executionContext) _Mutation_deleteItem(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3580,7 +3580,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteItem(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {
@@ -3685,9 +3685,9 @@ func (ec *executionContext) _Mutation_deletePurchase(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deletePurchase(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3697,7 +3697,7 @@ func (ec *executionContext) fieldContext_Mutation_deletePurchase(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {
@@ -4077,9 +4077,9 @@ func (ec *executionContext) _Mutation_deleteInventoryItem(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteInventoryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4089,7 +4089,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteInventoryItem(ctx contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {
@@ -4342,9 +4342,9 @@ func (ec *executionContext) _Mutation_deleteDish(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4354,7 +4354,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteDish(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	defer func() {
