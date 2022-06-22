@@ -143,7 +143,7 @@ func (r *ingredientResolver) Item(ctx context.Context, obj *model.Ingredient) (*
 
 func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.IngredientSet) ([]*model.Ingredient, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-		SELECT ingredient.id
+		SELECT ingredient.id, ingredient.item_id
 		FROM ingredient 
 		JOIN item on item.id = ingredient.item_id
 		WHERE ingredient_set_id = $1
@@ -152,21 +152,55 @@ func (r *ingredientSetResolver) Ingredients(ctx context.Context, obj *model.Ingr
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	ingredients := []*model.Ingredient{}
 
 	for rows.Next() {
 		var ingredient model.Ingredient
 		var ingredientID int
+		var itemID int
 
-		err := rows.Scan(&ingredientID)
+		err := rows.Scan(&ingredientID, &itemID)
 		if err != nil {
 			return nil, err
 		}
 
+		var ingredientItem model.Item
+		ingredientItem.ID = strconv.Itoa(itemID)
+
 		ingredient.ID = strconv.Itoa(ingredientID)
+		ingredient.Item = &ingredientItem
 		ingredients = append(ingredients, &ingredient)
+	}
+
+	rows.Close()
+
+	for _, ing := range ingredients {
+		inventoryRows, inventoryErr := db.Conn.Query(context.Background(), `
+			WITH specific_items AS (
+				SELECT specific_item_id
+				FROM item_counts_as
+				WHERE generic_item_id = $1
+			)
+			SELECT * FROM inventory_item
+			WHERE item_id IN (
+				SELECT UNNEST(ARRAY_APPEND(ARRAY_AGG(specific_item_id), $1))
+				FROM specific_items)
+		`, ing.Item.ID)
+
+		if inventoryErr != nil {
+			return nil, inventoryErr
+		}
+		defer inventoryRows.Close()
+
+		t := true
+		f := false
+
+		if inventoryRows.Next() {
+			ing.IsInInventory = &t
+		} else {
+			ing.IsInInventory = &f
+		}
 	}
 
 	if rows.Err() != nil {
