@@ -49,7 +49,7 @@ func (r *dishResolver) Tags(ctx context.Context, obj *model.Dish) ([]*model.Dish
 
 func (r *dishResolver) Dates(ctx context.Context, obj *model.Dish) ([]*model.DishDate, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-      SELECT id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
+      SELECT id, CAST(date AS TEXT)
 			FROM dish_date 
       WHERE dish_id = $1
       ORDER BY date DESC
@@ -604,8 +604,8 @@ func (r *mutationResolver) AddInventoryItem(ctx context.Context, name string, ad
       FROM GENERATE_SERIES(1, $7)
       RETURNING 
 				inventory_item.id, 
-				CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT), 
-				CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT), 
+				CAST(expiration AS TEXT), 
+				CAST(add_date AS TEXT), 
 				amount, 
 				location_id, 
 				inventory_item.item_id
@@ -670,8 +670,8 @@ func (r *mutationResolver) UpdateInventoryItem(ctx context.Context, id string, a
 		WHERE id = $1
 		RETURNING 
 			item_id,
-			CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT),
-			CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT)
+			CAST(expiration AS TEXT),
+			CAST(add_date AS TEXT)
 	`, idNum, addDate, amount, expiration).Scan(
 		&itemID,
 		&updatedInventoryItem.Expiration,
@@ -994,7 +994,7 @@ func (r *mutationResolver) AddDishDate(ctx context.Context, dishID string, date 
 	err := db.Conn.QueryRow(context.Background(), `
 		INSERT INTO dish_date(dish_id, date)
 		VALUES($1, $2)
-		RETURNING id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
+		RETURNING id, CAST(date AS TEXT)
 	`, dishID, date).Scan(&dateID, &dishDate.Date)
 
 	dishDate.ID = strconv.Itoa(dateID)
@@ -1102,7 +1102,7 @@ func (r *purchaseItemResolver) Purchase(ctx context.Context, obj *model.Purchase
 	var tempID int
 
 	err := db.Conn.QueryRow(context.Background(), `
-			SELECT purchase.id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
+			SELECT purchase.id, CAST(purchase.date AS TEXT)
 			FROM purchase
 			INNER JOIN purchase_item on purchase_item.purchase_id = purchase.id
 			WHERE purchase_item.id = $1
@@ -1248,8 +1248,8 @@ func (r *queryResolver) InventoryItems(ctx context.Context) ([]*model.InventoryI
 	rows, err := db.Conn.Query(context.Background(), `
     SELECT 
 			id, 
-			CAST(EXTRACT(epoch FROM expiration) * 1000 AS TEXT), 
-			CAST(EXTRACT(epoch FROM add_date) * 1000 AS TEXT), 
+			CAST(expiration AS TEXT), 
+			CAST(add_date AS TEXT), 
 			amount
     FROM inventory_item 
     ORDER BY expiration ASC
@@ -1401,7 +1401,7 @@ func (r *queryResolver) DishTags(ctx context.Context) ([]*model.DishTag, error) 
 
 func (r *queryResolver) Purchases(ctx context.Context) ([]*model.Purchase, error) {
 	rows, err := db.Conn.Query(context.Background(), `
-		SELECT id, CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT)
+		SELECT id, CAST(date AS TEXT)
 		FROM purchase
 		ORDER BY date DESC
 	`)
@@ -1439,7 +1439,7 @@ func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchas
 	idNum, _ := strconv.Atoi(id)
 
 	err := db.Conn.QueryRow(context.Background(), `
-      SELECT CAST(EXTRACT(epoch FROM date) * 1000 AS TEXT) AS date
+      SELECT CAST(date AS TEXT)
 			FROM purchase
       WHERE id = $1
 		`, idNum).Scan(&purchase.Date)
@@ -1448,8 +1448,6 @@ func (r *queryResolver) Purchase(ctx context.Context, id string) (*model.Purchas
 		fmt.Println(err)
 		return nil, err
 	}
-
-	fmt.Println("DATE:\n", purchase.Date)
 
 	return &purchase, nil
 }
